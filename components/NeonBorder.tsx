@@ -4,9 +4,10 @@ import { BorderSettings } from '../types';
 
 interface Props {
   settings: BorderSettings;
+  className?: string;
 }
 
-const NeonBorder: React.FC<Props> = ({ settings }) => {
+const NeonBorder: React.FC<Props> = ({ settings, className = "" }) => {
   if (!settings.enabled) return null;
 
   const animationDuration = `${11 - settings.speed}s`;
@@ -15,7 +16,7 @@ const NeonBorder: React.FC<Props> = ({ settings }) => {
     : `conic-gradient(from 0deg, ${settings.colors[0]}, transparent, ${settings.colors[0]})`;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" style={{ padding: `${settings.thickness}px` }}>
+    <div className={`fixed inset-0 pointer-events-none overflow-hidden ${className}`} style={{ padding: `${settings.thickness}px`, zIndex: 0 }}>
       <div 
         className="absolute inset-[-100%] border-animation"
         style={{
@@ -25,7 +26,7 @@ const NeonBorder: React.FC<Props> = ({ settings }) => {
           filter: 'blur(8px)'
         }}
       />
-      <div className="absolute inset-0 bg-[#0a0a0a] rounded-[inherit]" />
+      <div className="absolute inset-0 bg-[#000000] rounded-[inherit]" />
     </div>
   );
 };

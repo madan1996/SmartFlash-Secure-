@@ -12,12 +12,12 @@ export interface BorderSettings {
   thickness: number; // 1 to 20
   direction: 'clockwise' | 'counter-clockwise';
   colors: string[]; // hex colors
-  pattern: 'rainbow' | 'dual' | 'single';
+  pattern: 'rainbow' | 'cyber' | 'lava' | 'forest'; // Updated to match actual presets
 }
 
 export interface FlashlightSettings {
   enabled: boolean;
-  brightness: number; // 0.1 to 2000
+  brightness: number; // 1 to 2000
   color: string; // hex
   strobeMode: 'static' | 'sos' | 'strobe';
 }

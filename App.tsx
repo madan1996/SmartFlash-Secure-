@@ -41,6 +41,14 @@ const App: React.FC = () => {
 
   const lastShake = useRef<number>(0);
 
+  // Haptic Feedback Helper
+  const hapticFeedback = useCallback((type: 'light' | 'medium' | 'heavy' = 'light') => {
+    if ('vibrate' in navigator) {
+      const ms = type === 'light' ? 10 : type === 'medium' ? 30 : 60;
+      navigator.vibrate(ms);
+    }
+  }, []);
+
   const addLog = useCallback((message: string, type: AppLog['type'] = 'info') => {
     const newLog: AppLog = { timestamp: Date.now(), message, type };
     setState(prev => ({
@@ -49,7 +57,6 @@ const App: React.FC = () => {
     }));
   }, []);
 
-  // Standardized error handler using native DOMException
   const handleSystemError = useCallback((error: Error | DOMException, context: string) => {
     const errorMsg = `[${context}] ${error.name}: ${error.message}`;
     addLog(errorMsg, 'error');
@@ -61,7 +68,7 @@ const App: React.FC = () => {
       const acc = event.accelerationIncludingGravity;
       if (!acc) return;
       
-      const threshold = 18; // Increased for "Field" use to prevent accidental triggers
+      const threshold = 18; 
       const magnitude = Math.sqrt(acc.x!**2 + acc.y!**2 + acc.z!**2);
       
       if (magnitude > threshold) {
@@ -87,10 +94,12 @@ const App: React.FC = () => {
   }, []);
 
   const updateFlashlight = (update: Partial<FlashlightSettings>) => {
+    if (update.enabled !== undefined) hapticFeedback('medium');
     setState(prev => ({ ...prev, flashlight: { ...prev.flashlight, ...update } }));
   };
 
   const toggleFlashlight = () => {
+    hapticFeedback('heavy');
     setState(prev => {
       const newState = !prev.flashlight.enabled;
       addLog(state.language === 'hi' ? `फ्लैश: ${newState ? 'सक्रिय' : 'बंद'}` : `Flash: ${newState ? 'Active' : 'Off'}`, 'automation');
@@ -99,14 +108,23 @@ const App: React.FC = () => {
   };
 
   const updateBorder = (update: Partial<BorderSettings>) => {
+    hapticFeedback('light');
     setState(prev => ({ ...prev, border: { ...prev.border, ...update } }));
   };
 
   const toggleLanguage = () => {
+    hapticFeedback('medium');
     setState(p => ({ ...p, language: p.language === 'en' ? 'hi' : 'en' }));
   };
 
+  const setTab = (tab: Tab) => {
+    hapticFeedback('light');
+    setState(p => ({ ...p, activeTab: tab }));
+  };
+
   const t = (en: string, hi: string) => state.language === 'hi' ? hi : en;
+
+  const colorfulGradient = `linear-gradient(90deg, ${state.border.colors.join(', ')})`;
 
   return (
     <div className="relative h-full w-full bg-[#000000] text-white overflow-hidden font-sans selection:bg-blue-500/30 transition-all duration-700">
@@ -114,12 +132,13 @@ const App: React.FC = () => {
 
       {state.isSystemLocked && (
         <LockScreen 
-          onUnlock={() => setState(p => ({ ...p, isSystemLocked: false }))}
+          onUnlock={() => { hapticFeedback('heavy'); setState(p => ({ ...p, isSystemLocked: false })); }}
           isFlashlightOn={state.flashlight.enabled}
           lowPowerMode={state.lowPowerMode}
           visualMode={state.lockScreenMode}
           onToggleFlashlight={toggleFlashlight}
           language={state.language}
+          borderSettings={state.border}
         />
       )}
 
@@ -136,16 +155,16 @@ const App: React.FC = () => {
             <button onClick={toggleLanguage} className="bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 text-[9px] font-black active-scale">
               {state.language === 'en' ? 'HINDI' : 'ENGLISH'}
             </button>
-            <button onClick={() => setState(p => ({ ...p, isSystemLocked: true }))} className="bg-white/5 w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center active-scale">
+            <button onClick={() => { hapticFeedback('medium'); setState(p => ({ ...p, isSystemLocked: true })); }} className="bg-white/5 w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center active-scale">
               <i className="fa-solid fa-lock text-gray-400 text-xs"></i>
             </button>
           </div>
         </header>
 
         <div className="flex-1 overflow-hidden relative">
-          {state.activeTab === Tab.FLASHLIGHT && <FlashlightTab settings={state.flashlight} updateSettings={updateFlashlight} language={state.language} onError={(e) => handleSystemError(e, 'FLASHLIGHT')} />}
+          {state.activeTab === Tab.FLASHLIGHT && <FlashlightTab settings={state.flashlight} updateSettings={updateFlashlight} language={state.language} onError={(e) => handleSystemError(e, 'FLASHLIGHT')} haptic={hapticFeedback} />}
           {state.activeTab === Tab.BORDER && <BorderTab settings={state.border} updateSettings={updateBorder} language={state.language} />}
-          {state.activeTab === Tab.VAULT && <VaultTab language={state.language} onError={(e) => handleSystemError(e, 'VAULT')} />}
+          {state.activeTab === Tab.VAULT && <VaultTab language={state.language} onError={(e) => handleSystemError(e, 'VAULT')} haptic={hapticFeedback} />}
           {state.activeTab === Tab.SETTINGS && (
             <div className="p-8 space-y-10 overflow-y-auto h-full pb-48 scrollbar-hide animate-fade-in">
                <div className="flex justify-between items-end">
@@ -179,7 +198,7 @@ const App: React.FC = () => {
                <section className="space-y-4">
                   <div className="flex items-center justify-between px-1">
                     <h3 className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">{t('EVENT TELEMETRY', 'इवेंट टेलीमेट्री')}</h3>
-                    <button onClick={() => setState(p => ({ ...p, logs: [] }))} className="text-[7px] font-black text-blue-500/50 uppercase tracking-widest">{t('PURGE', 'मिटाएं')}</button>
+                    <button onClick={() => { hapticFeedback('medium'); setState(p => ({ ...p, logs: [] })); }} className="text-[7px] font-black text-blue-500/50 uppercase tracking-widest">{t('PURGE', 'मिटाएं')}</button>
                   </div>
                   <div className="bg-black border border-white/10 rounded-2xl p-6 h-56 overflow-y-auto font-mono text-[8px] space-y-3 scrollbar-hide">
                     {state.logs.length === 0 ? (
@@ -207,11 +226,17 @@ const App: React.FC = () => {
           ].map(({ tab, icon, label }) => (
             <button
               key={tab}
-              onClick={() => setState(p => ({ ...p, activeTab: tab }))}
-              className={`relative flex flex-col items-center transition-all duration-200 active-scale ${state.activeTab === tab ? 'text-blue-500' : 'text-gray-600'}`}
+              onClick={() => setTab(tab)}
+              className={`relative flex flex-col items-center transition-all duration-200 active-scale ${state.activeTab === tab ? 'text-white' : 'text-gray-600'}`}
             >
-              <div className={`mb-1 p-3.5 rounded-xl transition-all ${state.activeTab === tab ? 'bg-blue-500/5 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]' : ''}`}>
+              <div className={`relative mb-1 p-3.5 rounded-xl transition-all ${state.activeTab === tab ? 'bg-white/5 border border-white/10' : ''}`}>
                 <i className={`fa-solid ${icon} text-lg`}></i>
+                {state.activeTab === tab && (
+                  <div 
+                    className="absolute -bottom-1 left-1.5 right-1.5 h-[3px] rounded-full animate-pulse shadow-[0_0_12px_rgba(255,255,255,0.8)] z-10"
+                    style={{ background: colorfulGradient }}
+                  ></div>
+                )}
               </div>
               <span className="text-[8px] font-black uppercase tracking-widest">{label}</span>
             </button>

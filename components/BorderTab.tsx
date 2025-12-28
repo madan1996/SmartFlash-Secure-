@@ -5,9 +5,12 @@ import { BorderSettings } from '../types';
 interface Props {
   settings: BorderSettings;
   updateSettings: (s: Partial<BorderSettings>) => void;
+  language: 'en' | 'hi';
 }
 
-const BorderTab: React.FC<Props> = ({ settings, updateSettings }) => {
+const BorderTab: React.FC<Props> = ({ settings, updateSettings, language }) => {
+  const t = (en: string, hi: string) => language === 'hi' ? hi : en;
+
   const PRESETS = {
     rainbow: ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#8b00ff'],
     cyber: ['#00f3ff', '#ff00ff', '#00f3ff'],
@@ -16,62 +19,75 @@ const BorderTab: React.FC<Props> = ({ settings, updateSettings }) => {
   };
 
   return (
-    <div className="flex flex-col h-full p-6 space-y-6 overflow-y-auto pb-24">
-      <div className="flex items-center justify-between p-4 bg-gray-900 rounded-xl border border-gray-800">
+    <div className="flex flex-col h-full p-8 space-y-10 overflow-y-auto pb-48 scrollbar-hide animate-fade-in">
+      <div className="flex items-center justify-between p-6 bg-white/[0.03] rounded-[32px] border border-white/5">
         <div>
-          <h3 className="font-bold text-lg">Border Animation</h3>
-          <p className="text-gray-400 text-xs">Neon lights around your screen</p>
+          <h3 className="font-black text-xl italic uppercase tracking-tighter">{t('BORDER EFFECT', 'बॉर्डर इफेक्ट')}</h3>
+          <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest mt-1">{t('DYNAMIC NEON EDGE', 'डायनामिक नियॉन एज')}</p>
         </div>
         <button 
           onClick={() => updateSettings({ enabled: !settings.enabled })}
-          className={`w-14 h-8 rounded-full relative transition-colors ${settings.enabled ? 'bg-blue-600' : 'bg-gray-700'}`}
+          className={`w-16 h-8 rounded-full relative transition-all active-scale ${settings.enabled ? 'bg-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-gray-800'}`}
         >
-          <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${settings.enabled ? 'left-7' : 'left-1'}`} />
+          <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-md ${settings.enabled ? 'left-9' : 'left-1'}`} />
         </button>
       </div>
 
-      <div className="space-y-4">
-        <label className="block text-sm font-medium">Speed & Direction</label>
-        <div className="flex gap-4 items-center">
-           <input 
-            type="range" min="1" max="10" 
-            value={settings.speed}
-            onChange={(e) => updateSettings({ speed: parseInt(e.target.value) })}
-            className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none accent-purple-500"
-          />
-          <button 
-            onClick={() => updateSettings({ direction: settings.direction === 'clockwise' ? 'counter-clockwise' : 'clockwise' })}
-            className="p-2 bg-gray-800 rounded-lg text-xs"
-          >
-            <i className={`fa-solid ${settings.direction === 'clockwise' ? 'fa-rotate-right' : 'fa-rotate-left'} mr-2`}></i>
-            {settings.direction === 'clockwise' ? 'CW' : 'CCW'}
-          </button>
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <div className="flex justify-between px-1">
+            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('SPEED & DIRECTION', 'गति और दिशा')}</label>
+            <span className="text-[10px] font-mono font-bold text-blue-500">{settings.speed}x</span>
+          </div>
+          <div className="flex gap-4 items-center bg-black/40 p-4 rounded-3xl border border-white/5">
+             <input 
+              type="range" min="1" max="10" 
+              value={settings.speed}
+              onChange={(e) => updateSettings({ speed: parseInt(e.target.value) })}
+              className="flex-1 h-1.5 bg-gray-900 rounded-full appearance-none accent-blue-500"
+            />
+            <button 
+              onClick={() => updateSettings({ direction: settings.direction === 'clockwise' ? 'counter-clockwise' : 'clockwise' })}
+              className="w-12 h-12 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-center text-blue-500 active-scale"
+            >
+              <i className={`fa-solid ${settings.direction === 'clockwise' ? 'fa-rotate-right' : 'fa-rotate-left'}`}></i>
+            </button>
+          </div>
         </div>
 
-        <label className="block text-sm font-medium">Thickness</label>
-        <input 
-          type="range" min="1" max="20" 
-          value={settings.thickness}
-          onChange={(e) => updateSettings({ thickness: parseInt(e.target.value) })}
-          className="w-full h-2 bg-gray-700 rounded-lg appearance-none accent-pink-500"
-        />
+        <div className="space-y-4">
+          <div className="flex justify-between px-1">
+            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('THICKNESS', 'मोटाई')}</label>
+            <span className="text-[10px] font-mono font-bold text-blue-500">{settings.thickness}px</span>
+          </div>
+          <div className="bg-black/40 p-6 rounded-3xl border border-white/5">
+            <input 
+              type="range" min="1" max="25" 
+              value={settings.thickness}
+              onChange={(e) => updateSettings({ thickness: parseInt(e.target.value) })}
+              className="w-full h-1.5 bg-gray-900 rounded-full appearance-none accent-blue-500"
+            />
+          </div>
+        </div>
 
-        <label className="block text-sm font-medium">Color Patterns</label>
-        <div className="grid grid-cols-2 gap-3">
-          {Object.entries(PRESETS).map(([name, colors]) => (
-            <button
-              key={name}
-              onClick={() => updateSettings({ colors, pattern: name as any })}
-              className={`p-3 rounded-lg border-2 transition-all capitalize flex items-center justify-between ${settings.pattern === name ? 'border-blue-500 bg-blue-900/20' : 'border-gray-800 bg-gray-900'}`}
-            >
-              <span>{name}</span>
-              <div className="flex -space-x-1">
-                {colors.slice(0, 3).map((c, i) => (
-                  <div key={i} className="w-3 h-3 rounded-full border border-gray-900" style={{ backgroundColor: c }} />
-                ))}
-              </div>
-            </button>
-          ))}
+        <div className="space-y-4">
+          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">{t('COLOR SCHEMES', 'रंग योजना')}</label>
+          <div className="grid grid-cols-2 gap-4">
+            {Object.entries(PRESETS).map(([name, colors]) => (
+              <button
+                key={name}
+                onClick={() => updateSettings({ colors, pattern: name as any })}
+                className={`p-5 rounded-[28px] border transition-all active-scale flex flex-col items-start gap-4 ${settings.pattern === name ? 'border-blue-500 bg-blue-500/5' : 'border-white/5 bg-white/5'}`}
+              >
+                <div className="flex -space-x-2">
+                  {colors.slice(0, 4).map((c, i) => (
+                    <div key={i} className="w-5 h-5 rounded-full border-2 border-black shadow-sm" style={{ backgroundColor: c }} />
+                  ))}
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest">{t(name.toUpperCase(), name === 'rainbow' ? 'इंद्रधनुष' : name === 'cyber' ? 'साइबर' : name === 'lava' ? 'लावा' : 'जंगल')}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
