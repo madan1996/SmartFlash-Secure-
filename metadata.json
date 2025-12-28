@@ -1,0 +1,7 @@
+{
+  "name": "SmartFlash Secure+",
+  "description": "A high-performance utility app featuring hyper-adjustable flashlight controls, animated neon border effects, and an AES-256 encrypted hidden vault for files and media.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
